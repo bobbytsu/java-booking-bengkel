@@ -65,17 +65,25 @@ public class PrintService {
 	}
 
 	public static void printBookingOrder(List<BookingOrder> listBookingOrder) {
-		String formatTable = "| %-2s | %-15s | %-15s | %-15s | %-15s | %-15s | %-15s |%n";
-		String line = "+----+-----------------+------------+-----------------+-----------------+-------+-----------------+%n";
+		String formatTable = "| %-2s | %-20s | %-20s | %-20s | %-20s | %-20s | %-20s |%n";
+		String line = "+----+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+%n";
 		System.out.format(line);
 		System.out.format(formatTable, "No", "Booking Id", "Nama Customer",  "Paymet Method", "Total Service", "Total Payment", "List Service");
 		System.out.format(line);
 		int number = 1;
 		for (BookingOrder bookingOrder : listBookingOrder) {
-			System.out.format(formatTable, number, bookingOrder.getBookingId(), bookingOrder.getCustomer().getName(), bookingOrder.getPaymentMethod(), bookingOrder.getTotalServicePrice(), bookingOrder.getTotalPayment(), bookingOrder.getServices());
+			System.out.format(formatTable, number, bookingOrder.getBookingId(), bookingOrder.getCustomer().getName(), bookingOrder.getPaymentMethod(), bookingOrder.getTotalServicePrice(), bookingOrder.getTotalPayment(), printServices(bookingOrder.getServices()));
 			number++;
 		}
 		System.out.printf(line);
+	}
+
+	public static String printServices(List<ItemService> itemServiceList){
+		String result = "";
+		for (ItemService itemService : itemServiceList) {
+			result += itemService.getServiceName() + ", ";
+		}
+		return result;
 	}
 	
 	//Silahkan Tambahkan function print sesuai dengan kebutuhan.

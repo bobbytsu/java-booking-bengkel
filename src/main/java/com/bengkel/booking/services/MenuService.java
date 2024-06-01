@@ -51,7 +51,7 @@ public class MenuService {
 				break;
 			case 4:
 				//panggil fitur Informasi Booking Order
-//				PrintService.bookingOrder(loggedInCustomer);
+				BengkelService.bookingOrder(input);
 				break;
 			default:
 				System.out.println("Logout");

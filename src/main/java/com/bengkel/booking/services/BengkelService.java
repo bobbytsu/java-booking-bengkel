@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BengkelService {
 	
 	//Silahkan tambahkan fitur-fitur utama aplikasi disini
+
+    public static List<BookingOrder> listAllBookingOrder = new ArrayList<>();
+    public static int lastBookingId = 0;
 	
 	//Login
     public static Customer login(AtomicBoolean isLooping, Scanner input, List<Customer> listAllCustomers) {
@@ -105,16 +108,16 @@ public class BengkelService {
         do {
             System.out.println("Masukkan Vehicle Id: ");
             vehicleId = input.nextLine();
-            for(Vehicle vehicle : customerVehicles){
+            for (Vehicle vehicle : customerVehicles) {
                 if (vehicle.getVehiclesId().equals(vehicleId)) {
                     vehicleFound = true;
                     break;
                 }
             }
-            if(!vehicleFound){
+            if (!vehicleFound) {
                 System.out.println("Kendaraan Tidak ditemukan.");
             }
-        } while(!vehicleFound);
+        } while (!vehicleFound);
 
         System.out.println("List Service Yang Tersedia: ");
         PrintService.printItemService(listAllItemService);
@@ -126,37 +129,37 @@ public class BengkelService {
         do {
             System.out.println("Silahkan Masukkan Service Id: ");
             itemServiceId = input.nextLine();
-            if(itemServiceId.equals(0)){
+            if (itemServiceId.equals("0")) {
                 return;
             }
             itemService = getItemServiceById(itemServiceId, listAllItemService);
-            if(itemService == null){
+            if (itemService == null) {
                 System.out.println("Service dengan ID " + itemServiceId + " tidak ditemukan.");
             } else {
                 selectedService.add(itemService);
             }
-        } while(itemService == null);
+        } while (itemService == null);
 
         MemberCustomer memberCustomer = null;
         boolean member = false;
-        for(MemberCustomer mc : lisAllMemberCustomers){
-            if(mc.getCustomerId().equals(loggedInCustomer.getCustomerId())){
+        for (MemberCustomer mc : lisAllMemberCustomers) {
+            if (mc.getCustomerId().equals(loggedInCustomer.getCustomerId())) {
                 member = true;
                 memberCustomer = mc;
                 break;
             }
         }
-        if(member){
+        if (member) {
             String choice = "";
             int count = 1;
             do {
                 System.out.println("Apakah anda ingin menambahkan Service Lainnya? (Y/T)");
                 choice = input.nextLine();
-                if(choice.equalsIgnoreCase("Y")){
+                if (choice.equalsIgnoreCase("Y")) {
                     System.out.println("Silahkan Masukkan Service Id: ");
                     itemServiceId = input.nextLine();
                     itemService = getItemServiceById(itemServiceId, listAllItemService);
-                    if(itemService == null){
+                    if (itemService == null) {
                         System.out.println("Service dengan ID " + itemServiceId + " tidak ditemukan.");
                     } else {
                         selectedService.add(itemService);
@@ -165,29 +168,44 @@ public class BengkelService {
                 } else {
                     break;
                 }
-            } while(count <= 1);
+            } while (count <= 1);
         }
 
         double totalHarga = 0.0;
-        for(ItemService is : selectedService){
+        double totalPembayaran;
+        for (ItemService is : selectedService) {
             totalHarga += is.getPrice();
         }
-
+        totalPembayaran = totalHarga;
         double totalHargaDiskon = totalHarga - (totalHarga * 0.1);
-        if(member){
+        String metodePembayaran = "";
+        if (member) {
             System.out.println("Silahkan Pilih Metode Pembayaran (Saldo Coin atau Cash)");
-            String metodePembayaran = input.nextLine();
-            if(metodePembayaran.equalsIgnoreCase("Saldo Coin") && memberCustomer.getSaldoCoin() > totalHargaDiskon){
+            metodePembayaran = input.nextLine();
+            if (metodePembayaran.equalsIgnoreCase("Saldo Coin") && memberCustomer.getSaldoCoin() > totalHargaDiskon) {
+                totalPembayaran = totalHargaDiskon;
                 memberCustomer.setSaldoCoin(memberCustomer.getSaldoCoin() - totalHargaDiskon);
+                System.out.println("Pembayaran Saldo Coin");
                 System.out.println("Total Harga Service: " + totalHarga);
-                System.out.println("Total Pembayaran: " + totalHargaDiskon);
+                System.out.println("Total Pembayaran: " + totalPembayaran);
+            } else {
+                metodePembayaran = "Cash";
+                System.out.println("Saldo Coin Tidak Cukup!");
+                System.out.println("Pembayaran Cash");
+                System.out.println("Total Harga Service: " + totalHarga);
+                System.out.println("Total Pembayaran: " + totalPembayaran);
             }
-            System.out.println("Total Harga Service: " + totalHarga);
-            System.out.println("Total Pembayaran: " + totalHarga);
         } else {
+            metodePembayaran = "Cash";
+            System.out.println("Pembayaran Cash");
             System.out.println("Total Harga Service: " + totalHarga);
-            System.out.println("Total Pembayaran: " + totalHarga);
+            System.out.println("Total Pembayaran: " + totalPembayaran);
         }
+
+        lastBookingId++;
+        String bookingId = String.format("Book-" + loggedInCustomer.getCustomerId() + "-%03d", lastBookingId);
+        BookingOrder bookingOrder = new BookingOrder(bookingId, loggedInCustomer, selectedService, metodePembayaran, totalHarga, totalPembayaran);
+        listAllBookingOrder.add(bookingOrder);
     }
 
     public static ItemService getItemServiceById(String itemServiceId, List<ItemService> listAllItemService){
@@ -211,7 +229,6 @@ public class BengkelService {
                 break;
             }
         }
-
         if(!member){
             System.out.println("Maaf fitur ini hanya untuk Member saja!");
         } else {
@@ -222,11 +239,17 @@ public class BengkelService {
     }
 
     //Booking Order
-    public static void bookingOrder(Customer loggedInCustomer){
+    public static void bookingOrder(Scanner input){
+
         System.out.println("Booking Order Menu");
-//        BookingOrder listAllBookingOrder = loggedInCustomer;
-//        PrintService.printBookingOrder(listAllBookingOrder);
+        PrintService.printBookingOrder(listAllBookingOrder);
+        System.out.println("0. Kembali Ke Home Menu");
+        String choice = input.nextLine();
+        if(choice.equals("0")){
+            return;
+        }
     }
+
 	//Logout
 	
 }
